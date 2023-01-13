@@ -50,7 +50,7 @@ int main(void)
 
             // Check if History as been called '!!'
             if(strcmp(args[0], "!!")) {
-                // RunHistoryCommand(); // TODO: 
+                // RunHistoryCommand(); // TODO: Shuling
             }
             
 
@@ -59,24 +59,24 @@ int main(void)
             // For loop through all of the args[] and strcmp(args[i], "|")
             for(int i = 0; args[i] != NULL; i++) {
                 if(strcmp(args[i], "|")) {
-                    // RunPipeCommand(); // TODO:
+                    // RunPipeCommand(); // TODO: Labib
                 }
             }
 
             // For loop through all of the args[] and strcmp(args[i], "<")
             for(int i = 0; args[i] != NULL; i++) {
                 if(strcmp(args[i], "<")) {
-                    // RunInputCommand(); // TODO:
+                    // RunInputCommand(); // TODO: Shuling
                 }
             }
             // For loop through all of the args[] and strcmp(args[i], ">")
             for(int i = 0; args[i] != NULL; i++) {
                 if(strcmp(args[i], ">")) {
-                    // RunOutputCommand(); // TODO:
+                    // RunOutputCommand(); // TODO: Shuling
                 }
             }
 
-            // TODO: Execute command
+            // Execute command
             if(done == 0) {
                 int rc = execvp(args[0], args);
             }
@@ -85,7 +85,7 @@ int main(void)
             // Check for 'exit'
             for(int i = 0; args[i] != NULL; i++) {
                 if(strcmp(args[i], "exit")) {
-                    // RunExitCommand(); // TODO:
+                    // RunExitCommand(); // TODO: Labib
                 }
             }
             
@@ -105,7 +105,7 @@ int main(void)
 }
 
 
-// TODO: Parse command!
+// Parse command!
 void ParseInput (char* input, char** args) {
     int count = 0;
     char *pch;
