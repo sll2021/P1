@@ -13,6 +13,7 @@ int done = 0;
 pid_t pid; 
 int should_wait = 1;
 void ParseInput (char* input, char** args);
+void RunPipeCommand(char** args);
 
 int main(void)
 {
@@ -68,6 +69,7 @@ int main(void)
                 // For loop through all of the args[] and strcmp(args[i], "|")
                 for(int i = 0; args[i] != NULL; i++) {
                     if(strcmp(args[i], "|")  == 0) {
+                        RunPipeCommand(args);
                         // RunPipeCommand(); // TODO: Labib
                     }
                 }
@@ -152,4 +154,40 @@ void ParseInput (char* input, char** args) {
     args[count-1][len-1] = '\0';
 
     // Use tokenizeEx to help!! 
+}
+
+void RunPipeCommand(char** args) {
+    // Seperating the two commands into two arrays
+    int index = 0; // Location of the pipe
+
+    // Find where the pipe's index is
+    for(int i = 0; args[i] != NULL; i++) {
+        if(strcmp(args[i],"|") == 0) {
+            index = i;
+        }
+    }
+
+    
+    // Run commands
+    pid_t pid;
+    int pipeFD[2];
+
+    if(pipe(pipeFD) < 0) 
+    {
+        perror("Error during pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    pid = fork();
+    if(pid < 0) {
+        perror("Error during fork in pipe!");
+        exit(EXIT_FAILURE);
+    }
+
+    if(pid == 0) 
+    {
+        close(pipeFD[0]); // close stdin
+        dup2(pipeFD[1], 1); // dup stdout
+        
+    }
 }
