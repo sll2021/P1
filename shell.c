@@ -10,6 +10,8 @@
 #define MAX_LINE 1024
 
 int done = 0;
+pid_t pid; 
+int should_wait = 1;
 void ParseInput (char* input, char** args);
 
 int main(void)
@@ -42,53 +44,68 @@ int main(void)
         // Input has length 1 or greater
         else 
         {
+            
             // Duplicate input
             input = strdup(buffer);
 
             // Parse input!
             ParseInput(input, args); //ParseInput (input string, args[] an array)
 
-            // Check if History as been called '!!'
-            if(strcmp(args[0], "!!")) {
-                // RunHistoryCommand(); // TODO: Shuling
-            }
-            
+            pid = fork();
 
-            // Do we need to redirect? parameters (char ** args)
-            // Do we need to pipe? (char ** args)
-            // For loop through all of the args[] and strcmp(args[i], "|")
-            for(int i = 0; args[i] != NULL; i++) {
-                if(strcmp(args[i], "|")) {
-                    // RunPipeCommand(); // TODO: Labib
+            if(pid == -1) {
+                printf("Forking failed");
+            }
+            else if (pid == 0) {
+                // Check if History as been called '!!'
+                if(strcmp(args[0], "!!")  == 0) {
+                    // RunHistoryCommand(); // TODO: Shuling
+                }
+                
+
+                // Do we need to redirect? parameters (char ** args)
+                // Do we need to pipe? (char ** args)
+                // For loop through all of the args[] and strcmp(args[i], "|")
+                for(int i = 0; args[i] != NULL; i++) {
+                    if(strcmp(args[i], "|")  == 0) {
+                        // RunPipeCommand(); // TODO: Labib
+                    }
+                }
+
+                // For loop through all of the args[] and strcmp(args[i], "<")
+                for(int i = 0; args[i] != NULL; i++) {
+                    if(strcmp(args[i], "<")  == 0) {
+                        // RunInputCommand(); // TODO: Shuling
+                    }
+                }
+                // For loop through all of the args[] and strcmp(args[i], ">")
+                for(int i = 0; args[i] != NULL; i++) {
+                    if(strcmp(args[i], ">") == 0) {
+                        // RunOutputCommand(); // TODO: Shuling
+                    }
+                }
+
+                // Check for 'exit'
+                for(int i = 0; args[i] != NULL; i++) {
+                    if(strcmp(args[i], "exit") == 0) {
+                        // RunExitCommand(); // TODO: Labib
+                        printf("%s ", args[i]);
+
+                        done = 1;
+                        // should_run = 0;
+                    }
+                }
+
+                // Execute command
+                if(done == 0) {
+                    int rc = execvp(args[0], args);
+                }
+            } 
+            else {
+                if(should_wait == 1) { //TODO: wait or no
+                    wait(NULL);
                 }
             }
-
-            // For loop through all of the args[] and strcmp(args[i], "<")
-            for(int i = 0; args[i] != NULL; i++) {
-                if(strcmp(args[i], "<")) {
-                    // RunInputCommand(); // TODO: Shuling
-                }
-            }
-            // For loop through all of the args[] and strcmp(args[i], ">")
-            for(int i = 0; args[i] != NULL; i++) {
-                if(strcmp(args[i], ">")) {
-                    // RunOutputCommand(); // TODO: Shuling
-                }
-            }
-
-            // Execute command
-            if(done == 0) {
-                int rc = execvp(args[0], args);
-            }
-
-
-            // Check for 'exit'
-            for(int i = 0; args[i] != NULL; i++) {
-                if(strcmp(args[i], "exit")) {
-                    // RunExitCommand(); // TODO: Labib
-                }
-            }
-            
 
         }
 
@@ -98,7 +115,7 @@ int main(void)
         // resized by getline
         free(buffer);
 
-        should_run = 0;
+        
 
     }
     return 0;
@@ -106,22 +123,29 @@ int main(void)
 
 
 // Parse command!
-void ParseInput (char* input, char** args) {
+void ParseInput (char* input, char** args) { 
     int count = 0;
     char *pch;
 
     pch = strtok(input, " ");
     while(pch != NULL) {
-        // printf("Token %d: %s\n", count, pch);
+        if(strcmp(pch, "&") == 0) { // TODO: Deals with &. Not sure if this totally works
+            should_wait = 0;
+            args[count] = "\0";
+            break;
+        }
+
+
         args[count] = pch;
         ++count;
 
+        
         pch = strtok(NULL, " ");
     }
 
-    for(int i = 0; args[i] != NULL; i++) {
-        printf("%s ", args[i]);
-    }
+    // for(int i = 0; args[i] != NULL; i++) {
+    //     printf("%s ", args[i]);
+    // }
     args[count] = NULL;
 
     int len = strlen(args[count-1]);
