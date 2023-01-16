@@ -55,7 +55,7 @@ int main(void)
             // Check for 'exit'
             for(int i = 0; args[i] != NULL; i++) {
                 if(strcmp(args[i], "exit") == 0) {
-                    // RunExitCommand(); // TODO: Labib
+                    // RunExitCommand();
                     done = 1;
                     wait(NULL);
                     should_run = 0;
@@ -80,7 +80,7 @@ int main(void)
                 for(int i = 0; args[i] != NULL; i++) {
                     if(strcmp(args[i], "|")  == 0) {
                         RunPipeCommand(args);
-                        // RunPipeCommand(); // TODO: Labib
+                        // RunPipeCommand();
                     }
                 }
 
@@ -105,7 +105,7 @@ int main(void)
                 }
             } 
             else {
-                if(should_wait == 1) { //TODO: wait or no
+                if(should_wait == 1) {
                     wait(NULL);
                 }
             }
