@@ -52,6 +52,16 @@ int main(void)
             // Parse input!
             ParseInput(input, args); //ParseInput (input string, args[] an array)
 
+            // Check for 'exit'
+            for(int i = 0; args[i] != NULL; i++) {
+                if(strcmp(args[i], "exit") == 0) {
+                    // RunExitCommand(); // TODO: Labib
+                    done = 1;
+                    wait(NULL);
+                    should_run = 0;
+                }
+            }
+
             pid = fork();
 
             if(pid == -1) {
@@ -87,16 +97,7 @@ int main(void)
                     }
                 }
 
-                // Check for 'exit'
-                for(int i = 0; args[i] != NULL; i++) {
-                    if(strcmp(args[i], "exit") == 0) {
-                        // RunExitCommand(); // TODO: Labib
-                        printf("%s ", args[i]);
-
-                        done = 1;
-                        // should_run = 0;
-                    }
-                }
+                
 
                 // Execute command
                 if(done == 0) {
@@ -167,6 +168,17 @@ void RunPipeCommand(char** args) {
         }
     }
 
+    char *first[MAX_LINE/2 + 1];
+    char *second[MAX_LINE/2 + 1];
+    for(int i = 0; i < index; i++) {
+        first[i] = args[i];
+    }
+    first[index] = NULL;
+
+    for(int i = index + 1; args[i] != NULL; i++) {
+        second[i - 1 - index] = args[i];
+        second[i - index] = NULL;
+    }
     
     // Run commands
     pid_t pid;
@@ -184,10 +196,25 @@ void RunPipeCommand(char** args) {
         exit(EXIT_FAILURE);
     }
 
-    if(pid == 0) 
+    else if(pid == 0) 
     {
         close(pipeFD[0]); // close stdin
         dup2(pipeFD[1], 1); // dup stdout
-        
+
+        int rc = execvp(first[0], first);
+        if(rc < 0) {
+            printf("Error in running Command");
+        }        
+    }
+    else if (pid > 0) 
+    {
+        wait(NULL);
+        close(pipeFD[1]); // close stdout
+        dup2(pipeFD[0], 0); // dup stdin
+
+        int rc = execvp(second[0], second);
+        if(rc < 0) {
+            printf("Error in running Command");
+        }     
     }
 }
