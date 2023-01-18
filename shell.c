@@ -6,14 +6,22 @@
 #include <string.h>
 #include <wait.h>
 #include <sys/wait.h>
+#include <sys/stat.h> //added
+#include <fcntl.h> //added
 
 #define MAX_LINE 1024
 
 int done = 0;
 pid_t pid; 
 int should_wait = 1;
+char *history_buffer; //new
+char *history_args[MAX_LINE/2 + 1]; //new
 void ParseInput (char* input, char** args);
 void RunPipeCommand(char** args);
+void RunHistoryCommand(char* input);
+void RunInputCommand(char** args, int file_index);
+void RunOutputCommand(char** args, int file_index);
+
 
 int main(void)
 {
@@ -70,7 +78,7 @@ int main(void)
             else if (pid == 0) {
                 // Check if History as been called '!!'
                 if(strcmp(args[0], "!!")  == 0) {
-                    // RunHistoryCommand(); // TODO: Shuling
+                    RunHistoryCommand(input); // TODO: Shuling
                 }
                 
 
@@ -87,7 +95,7 @@ int main(void)
                 // For loop through all of the args[] and strcmp(args[i], "<")
                 for(int i = 0; args[i] != NULL; i++) {
                     if(strcmp(args[i], "<")  == 0) {
-                        // RunInputCommand(); // TODO: Shuling
+                        //RunInputCommand(args, (i+1)); // TODO: Shuling
                     }
                 }
                 // For loop through all of the args[] and strcmp(args[i], ">")
@@ -217,4 +225,87 @@ void RunPipeCommand(char** args) {
             printf("Error in running Command");
         }     
     }
+}
+
+//new
+void RunHistoryCommand(char* input)
+{       
+    if(history_buffer == NULL)
+    {
+        printf("No commands in history.");
+        return;
+    }
+    
+    else
+    {
+        //int history_status = execvp(history_args[0], history_args); 
+        printf("The most recent command in history is: \n"); //to be edited
+        printf("%s\n", history_buffer);
+        strcpy(input, history_buffer);
+        strcpy(history_buffer, input); //place new command in history buffer
+        ParseInput(history_buffer, history_args); //place new command in history argument list
+    }
+}
+
+//new <
+void RunInputCommand(char** args, int file_index)
+{
+    FILE *fp;
+    char path[1035];
+
+    int fd = open(args[file_index], O_RDONLY); //get a file descriptor for the file
+    
+    if(fd == -1)
+    {
+        printf("Unable to open the file.");
+        return;
+    }
+
+    dup2(fd, STDIN_FILENO);
+    close(fd);
+}
+
+//new >
+void RunOutputCommand(char** args, int file_index)
+{   
+    FILE *fp;
+    char path[1035];
+
+    int fd = open(args[file_index], O_RDWR); //get a file descriptor for the file
+    
+    if(fd == -1)
+    {
+        printf("Unable to open the file.");
+        return;
+    }
+
+    for(int i = 0; args[i] != ">"; i++) //store the command to be executed in path 
+    {   
+        if(i == 0)
+        {
+            strcpy(path, args[i]);
+        }
+        else
+        {
+            strcat(path, args[i]);
+        }
+        strcat(path, " ");
+    }
+
+    fp = popen(path, "r"); //execute the command
+    if(fp == NULL) //handle error message
+    {
+        printf("Command is invalid.");
+        return;
+    }
+
+    //read and print from the output of command line by line
+    while(fgets(path, sizeof(path), fp) != NULL) 
+    {
+        fprintf(stdout, path);
+    }
+
+    dup2(fd, STDOUT_FILENO); // redirect the output from standard output to .txt file
+    close(fd);
+    pclose(fp);
 }
