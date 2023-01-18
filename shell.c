@@ -76,9 +76,10 @@ int main(void)
                 printf("Forking failed");
             }
             else if (pid == 0) {
+                printf("run");
                 // Check if History as been called '!!'
                 if(strcmp(args[0], "!!")  == 0) {
-                    RunHistoryCommand(input); // TODO: Shuling
+                    //RunHistoryCommand(input); // TODO: Shuling
                 }
                 
 
@@ -87,10 +88,11 @@ int main(void)
                 // For loop through all of the args[] and strcmp(args[i], "|")
                 for(int i = 0; args[i] != NULL; i++) {
                     if(strcmp(args[i], "|")  == 0) {
-                        RunPipeCommand(args);
+                        //RunPipeCommand(args);
                         // RunPipeCommand();
                     }
                 }
+
 
                 // For loop through all of the args[] and strcmp(args[i], "<")
                 for(int i = 0; args[i] != NULL; i++) {
@@ -98,10 +100,11 @@ int main(void)
                         //RunInputCommand(args, (i+1)); // TODO: Shuling
                     }
                 }
+
                 // For loop through all of the args[] and strcmp(args[i], ">")
                 for(int i = 0; args[i] != NULL; i++) {
                     if(strcmp(args[i], ">") == 0) {
-                        // RunOutputCommand(); // TODO: Shuling
+                        RunOutputCommand(args, (i+1)); // TODO: Shuling
                     }
                 }
 
@@ -232,7 +235,7 @@ void RunHistoryCommand(char* input)
 {       
     if(history_buffer == NULL)
     {
-        printf("No commands in history.");
+        printf("No commands in history. \n");
         return;
     }
     
@@ -254,7 +257,7 @@ void RunInputCommand(char** args, int file_index)
 
     int fd = open(args[file_index], O_RDONLY); //get a file descriptor for the file
     
-    if(fd == -1)
+    if(fd == -1 || args[file_index] == NULL)
     {
         printf("Unable to open the file.");
         return;
@@ -272,12 +275,13 @@ void RunOutputCommand(char** args, int file_index)
 
     int fd = open(args[file_index], O_RDWR); //get a file descriptor for the file
     
-    if(fd == -1)
+    if(fd == -1 || args[file_index] == NULL)
     {
         printf("Unable to open the file.");
         return;
     }
 
+    /*
     for(int i = 0; args[i] != ">"; i++) //store the command to be executed in path 
     {   
         if(i == 0)
@@ -303,8 +307,8 @@ void RunOutputCommand(char** args, int file_index)
     {
         fprintf(stdout, path);
     }
-
+    */
     dup2(fd, STDOUT_FILENO); // redirect the output from standard output to .txt file
     close(fd);
-    pclose(fp);
+    //pclose(fp);
 }
