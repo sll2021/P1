@@ -241,7 +241,6 @@ void RunHistoryCommand(char* input)
         //int history_status = execvp(history_args[0], history_args); 
         printf("The most recent command in history is: \n"); //to be edited
         printf("%s\n", history_buffer);
-        strcpy(input, history_buffer);
         strcpy(history_buffer, input); //place new command in history buffer
         ParseInput(history_buffer, history_args); //place new command in history argument list
     }
